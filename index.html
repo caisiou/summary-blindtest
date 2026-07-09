@@ -56,8 +56,8 @@ input[type=text]{border:3px solid var(--border);border-radius:10px;padding:10px 
   <div class="card center">
     <h1>哪一版摘要<br>讓你最想點進去？</h1>
     <p class="small" style="margin:12px auto;max-width:560px;text-align:left">
-      老師您好！接下來會出現 <b>10 道題</b>（從 20 支真實教學資源隨機抽出）。每一題有<b>三個版本的摘要</b>（甲/乙/丙，順序隨機、不標來源）。<br><br>
-      請想像您正在教學資源平台上找素材：<b>讀完短摘要（需要時展開長摘要），點選「最讓您想看這支影片／學習單」的那一版。</b>沒有標準答案，憑直覺即可，約 5~8 分鐘。
+      老師您好！接下來會出現 <b>12 道題</b>（從真實教學資源隨機抽出）：<b>6 題比「短摘要」、6 題比「長摘要」</b>，每題三個版本（甲/乙/丙，順序隨機、不標來源）。<br><br>
+      請想像您正在教學資源平台上找素材：<b>讀完短摘要（需要時展開長摘要），點選「最讓您想看這支影片／學習單」的那一版。</b>沒有標準答案，憑直覺即可，約 8~10 分鐘。
     </p>
     <p style="margin:8px 0"><input type="text" id="uname" placeholder="請輸入您的名字或暱稱 ✏️"></p>
     <button class="btn green" onclick="startGame()">▶ 開始挑戰</button>
@@ -69,8 +69,18 @@ input[type=text]{border:3px solid var(--border);border-radius:10px;padding:10px 
   <div class="hud"><span class="prog" id="prog">Q1/10</span><span class="cnt" id="qnum"></span></div>
   <div class="card">
     <div class="qtitle" id="qtitle"></div>
-    <div class="qhint">👀 哪一版讓你最想點進去看？（可展開長摘要再決定）</div>
+    <div class="qhint" id="qhint"></div>
     <div class="opts" id="opts"></div>
+  </div>
+</div>
+
+<!-- 中場加油 -->
+<div id="scr-mid" class="hidden">
+  <div class="card center" style="margin-top:10vh">
+    <h1>💪 加油加油！</h1>
+    <p style="font-size:1.1rem;font-weight:900;margin:14px 0">我們剩 6 題囉！<br>很感謝老師撥空幫忙 🙏</p>
+    <p class="small">接下來 6 題換比「長摘要」——想像您在備課細讀的情境。</p>
+    <button class="btn green" onclick="resumeGame()" style="margin-top:10px">▶ 繼續！</button>
   </div>
 </div>
 
@@ -78,7 +88,7 @@ input[type=text]{border:3px solid var(--border);border-radius:10px;padding:10px 
 <div id="scr-end" class="hidden">
   <div class="hud"><span>🏆 結果揭曉</span><span class="cnt" id="endname"></span></div>
   <div class="card center">
-    <h1>你的選擇排行</h1>
+    <h1>🙏 非常感謝老師！</h1>\n    <p class="small" style="margin-bottom:10px">您的每一票都會直接幫助我們把摘要做得更好。以下是您的選擇排行：</p>
     <div id="mybars" style="max-width:640px;margin:14px auto;text-align:left"></div>
     <div class="champ" id="mychamp"></div>
     <p class="small" id="mydetail" style="margin-top:10px"></p>
@@ -105,11 +115,15 @@ const VERNAME = {A:"正式機版", B:"Staging gemma版", C:"new 3flash版"};
 const LS_KEY = "summary_blindtest_tally_v1";
 // ☁️ 雲端計票端點：貼上 Apps Script 部署網址（.../exec 結尾）。留空 = 純本機模式。
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbw_i9pvpxhRNZQk61ouQKf-1uaiWuuIpz-ao2dAVOwUAdoUtJ4x_tuvKmhzaY8PS8IfMg/exec";
-const NQ = 10;
+const NQ = 12;
 let qs = [], cur = 0, picks = [], user = "";
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 let nudged = false;
+function buildQuestions(){
+  const picked = shuffle([...POOL]).slice(0, NQ);
+  return picked.map((r,i)=>({ ...r, kind: i < NQ/2 ? "short" : "long" }));
+}
 function startGame(){
   const nameVal = document.getElementById("uname").value.trim();
   if(!nameVal && !nudged){
@@ -120,30 +134,40 @@ function startGame(){
     return;
   }
   user = nameVal || "匿名老師";
-  qs = shuffle([...POOL]).slice(0, NQ);
+  qs = buildQuestions();
   cur = 0; picks = [];
   show("scr-q"); renderQ();
 }
-function show(id){for(const s of ["scr-start","scr-q","scr-end"]) document.getElementById(s).classList.toggle("hidden", s!==id); window.scrollTo(0,0);}
+function show(id){for(const s of ["scr-start","scr-q","scr-mid","scr-end"]) document.getElementById(s).classList.toggle("hidden", s!==id); window.scrollTo(0,0);}
 function renderQ(){
   const q = qs[cur];
+  const kindLabel = q.kind==="short" ? "短摘要" : "長摘要";
   document.getElementById("prog").textContent = `Q${cur+1}/${NQ}  ${"■".repeat(cur+1)}${"□".repeat(NQ-cur-1)}`;
-  document.getElementById("qnum").textContent = `資源 #${q.num}`;
+  document.getElementById("qnum").textContent = `本題比【${kindLabel}】`;
   document.getElementById("qtitle").textContent = q.title;
+  document.getElementById("qhint").textContent = q.kind==="short"
+    ? "👀 這題比「短摘要」：想像您在列表快速掃描——哪一版讓您最想點進去？"
+    : "📖 這題比「長摘要」：想像您在備課細讀——哪一版讓您最想採用這支資源？";
   const order = shuffle(["A","B","C"]);
   const box = document.getElementById("opts"); box.innerHTML = "";
   const labels = ["版本 甲","版本 乙","版本 丙"];
   order.forEach((v,i)=>{
     const d = document.createElement("div"); d.className="opt";
-    d.innerHTML = `<span class="tag">${labels[i]}</span>
-      <div class="short">${esc(q[v].short)}</div>
-      <details><summary>📖 展開長摘要</summary><div class="long">${esc(q[v].long)}</div></details>
+    const body = q.kind==="short"
+      ? `<div class="short">${esc(q[v].short)}</div>`
+      : `<div class="long" style="max-height:340px">${esc(q[v].long)}</div>`;
+    d.innerHTML = `<span class="tag">${labels[i]}</span>${body}
       <button class="pick">✋ 這版最吸引我</button>`;
-    d.querySelector(".pick").onclick = ()=>{ picks.push({num:q.num, ver:v}); next(); };
+    d.querySelector(".pick").onclick = ()=>{ picks.push({num:q.num+(q.kind==="short"?"短":"長"), ver:v}); next(); };
     box.appendChild(d);
   });
 }
-function next(){ cur++; if(cur < NQ) renderQ(); else finish(); }
+function next(){
+  cur++;
+  if(cur === NQ/2){ show("scr-mid"); return; }
+  if(cur < NQ) renderQ(); else finish();
+}
+function resumeGame(){ show("scr-q"); renderQ(); }
 function tally(arr){ const t={A:0,B:0,C:0}; arr.forEach(p=>t[p.ver]++); return t; }
 function bars(el, t, total){
   const colors={A:"var(--cyan)",B:"var(--amber)",C:"var(--second)"};
