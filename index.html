@@ -59,8 +59,13 @@ input[type=text]{border:3px solid var(--border);border-radius:10px;padding:10px 
       老師您好！接下來會出現 <b>12 道題</b>（從真實教學資源隨機抽出）：<b>6 題比「短摘要」＋6 題比「長摘要」，交錯出現</b>（每題上方會標示題型），每題三個版本（甲/乙/丙，順序隨機、不標來源）。<br><br>
       請想像您正在教學資源平台上找素材：<b>讀完該題的摘要後，點選「最讓您想看這支影片／學習單」的那一版。</b>沒有標準答案，憑直覺即可，約 8~10 分鐘。
     </p>
-    <p style="margin:8px 0"><input type="text" id="uname" placeholder="請輸入您的名字或暱稱 ✏️"></p>
-    <p style="margin:8px 0"><input type="text" id="uschool" placeholder="您的服務單位／學校 🏫（選填）"></p>
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:460px;margin:16px auto 4px">
+      <label style="text-align:left;font-weight:900;font-size:1rem">🏫 服務單位／學校
+        <input type="text" id="uschool" placeholder="例如：快樂國小" style="width:100%;margin-top:4px"></label>
+      <label style="text-align:left;font-weight:900;font-size:1rem">✏️ 名字或暱稱
+        <input type="text" id="uname" placeholder="例如：王老師" style="width:100%;margin-top:4px"></label>
+      <p class="small" id="formhint" style="text-align:left;margin-top:-2px">兩欄都填好，方便我們統計是哪些老師的寶貴意見 🙏</p>
+    </div>
     <button class="btn green" onclick="startGame()">▶ 開始挑戰</button>
   </div>
 </div>
