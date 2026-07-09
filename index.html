@@ -19,6 +19,11 @@ h1{font-family:var(--px);font-size:1.05rem;color:var(--main);line-height:1.8;mar
 .qtitle{font-weight:900;font-size:1.15rem;color:var(--main);margin-bottom:4px}
 .qhint{color:var(--text2);font-size:.95rem;margin-bottom:10px}
 .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
+.opts.stack{grid-template-columns:1fr;gap:16px}
+.opts.stack .opt{padding:18px 22px}
+.opts.stack .long{font-size:1.12rem;line-height:1.95;max-height:none;color:var(--text)}
+.opts.stack .tag{font-size:.72rem;padding:6px 14px}
+.opts.stack .pick{align-self:flex-end;padding:12px 28px}
 .opt{background:var(--panel);border:3px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 0 var(--border-dk);transition:transform .08s}
 .opt:hover{transform:translateY(-2px)}
 .opt .tag{font-family:var(--px);font-size:.6rem;color:#fff;background:var(--cyan);border-radius:8px;padding:5px 10px;align-self:flex-start}
@@ -157,12 +162,13 @@ function renderQ(){
     : "📖 這題比「長摘要」：想像您在備課細讀——哪一版讓您最想採用這支資源？";
   const order = shuffle(["A","B","C"]);
   const box = document.getElementById("opts"); box.innerHTML = "";
+  box.classList.toggle("stack", q.kind==="long");
   const labels = ["版本 甲","版本 乙","版本 丙"];
   order.forEach((v,i)=>{
     const d = document.createElement("div"); d.className="opt";
     const body = q.kind==="short"
       ? `<div class="short">${esc(q[v].short)}</div>`
-      : `<div class="long" style="max-height:340px">${esc(q[v].long)}</div>`;
+      : `<div class="long">${esc(q[v].long)}</div>`;
     d.innerHTML = `<span class="tag">${labels[i]}</span>${body}
       <button class="pick">✋ 這版最吸引我</button>`;
     d.querySelector(".pick").onclick = ()=>{ picks.push({num:q.num+(q.kind==="short"?"短":"長"), ver:v}); next(); };
